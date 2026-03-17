@@ -1,0 +1,16 @@
+search:
+  safe_search: 0
+  autocomplete: ""
+  formats:
+    - html
+    - json
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  secret_key: "default-secret-key"
+  base_url: false
+  
+limiter:
+  # Disable the limiter. If it's a private instance, you don't need it.
+  enabled: false

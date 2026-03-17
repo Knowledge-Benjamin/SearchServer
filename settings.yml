@@ -1,3 +1,5 @@
+use_default_settings: true
+
 search:
   safe_search: 0
   autocomplete: ""

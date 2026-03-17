@@ -33,7 +33,7 @@ from cachetools import TTLCache
 # --- Configuration ---
 API_KEY = os.getenv("SEARCH_API_KEY", "default-key-change-in-production")
 VERSION = "1.0.0"
-MAX_CONCURRENT_ATTEMPTS = 3 # How many nodes to fire at simultaneously
+MAX_CONCURRENT_ATTEMPTS = 8 # Fire at up to 8 nodes to guarantee at least one succeeds
 INSTANCE_REFRESH_INTERVAL = 3600 # 1 hour
 
 security = HTTPBearer()
@@ -43,9 +43,15 @@ active_instances: List[str] = []
 # Cache search results for 1 hour to heavily save resources
 search_cache = TTLCache(maxsize=1000, ttl=3600) 
 
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2.1 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+]
+
 class SearchRequest(BaseModel):
     query: str = Field(..., min_length=1, description="The search query")
-    engines: Optional[str] = Field("google,bing,duckduckgo,wikipedia", description="Comma-separated engines")
+    engines: Optional[str] = Field("google,bing,duckduckgo", description="Comma-separated engines")
     time_range: Optional[str] = Field(None, description="Time range (day, week, month, year)")
     limit: Optional[int] = Field(10, description="Max results")
 
@@ -123,7 +129,8 @@ app = FastAPI(
 async def attempt_search(url: str, params: dict, client: httpx.AsyncClient) -> dict:
     """Attempt a single query against a specific SearXNG instance."""
     endpoint = f"{url.rstrip('/')}/search"
-    resp = await client.get(endpoint, params=params)
+    headers = {"User-Agent": random.choice(USER_AGENTS)}
+    resp = await client.get(endpoint, params=params, headers=headers)
     resp.raise_for_status()
     # Ensure it's valid JSON
     data = resp.json()
@@ -152,12 +159,13 @@ async def perform_search(request: SearchRequest, _: Any = Depends(verify_api_key
     params = {
         "q": request.query,
         "format": "json",
-        "engines": request.engines if request.engines else "",
     }
+    if request.engines:
+        params["engines"] = request.engines
     if request.time_range:
         params["time_range"] = request.time_range
 
-    async with httpx.AsyncClient(timeout=12.0) as client:
+    async with httpx.AsyncClient(timeout=15.0) as client:
         # Create concurrent tasks
         tasks = [
             asyncio.create_task(attempt_search(node, params, client))
@@ -173,10 +181,9 @@ async def perform_search(request: SearchRequest, _: Any = Depends(verify_api_key
                  result = await coro
                  successful_data = result
                  # Retrieve the actual node that won (hacky way, but works as we just need one)
-                 # Since we don't return the node URL from attempt_search, we just pick the first one from target nodes for logging
                  break
              except Exception as e:
-                 logger.warning(f"A node failed: {type(e).__name__}")
+                 logger.warning(f"A node failed: {type(e).__name__} - {str(e)}")
                  continue
                  
         # Cancel remaining pending tasks

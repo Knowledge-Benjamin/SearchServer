@@ -8,9 +8,7 @@ search:
 server:
   port: 8080
   bind_address: "0.0.0.0"
-  secret_key: "default-secret-key"
+  secret_key: "change-this-secret-key-in-prod-searxng"
   base_url: false
-  
-limiter:
-  # Disable the limiter. If it's a private instance, you don't need it.
-  enabled: false
+  limiter: false
+  public_instance: false

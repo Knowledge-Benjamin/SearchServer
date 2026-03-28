@@ -8,7 +8,7 @@ search:
     - json
 
 server:
-  port: 8080
+  port: 7860
   bind_address: "0.0.0.0"
   secret_key: "${SEARXNG_SECRET_KEY}"
   base_url: false

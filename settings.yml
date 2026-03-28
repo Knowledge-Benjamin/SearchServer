@@ -10,7 +10,7 @@ search:
 server:
   port: 8080
   bind_address: "0.0.0.0"
-  secret_key: "change-this-secret-key-in-prod-searxng"
+  secret_key: "${SEARXNG_SECRET_KEY}"
   base_url: false
   limiter: false
   public_instance: false

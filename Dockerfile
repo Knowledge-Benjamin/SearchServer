@@ -9,5 +9,5 @@ USER root
 RUN chown -R searxng:searxng /etc/searxng/settings.yml
 USER searxng
 
-# Expose standard Hugging Face Space port
-EXPOSE 7860
+# Expose standard SearXNG port
+EXPOSE 8080

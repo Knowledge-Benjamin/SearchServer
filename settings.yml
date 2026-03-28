@@ -8,9 +8,9 @@ search:
     - json
 
 server:
-  port: 7860
+  port: 8080
   bind_address: "0.0.0.0"
-  secret_key: "${SEARXNG_SECRET_KEY}"
+  secret_key: "change-this-secret-key-in-prod-searxng"
   base_url: false
   limiter: false
   public_instance: false

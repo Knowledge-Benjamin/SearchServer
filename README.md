@@ -9,7 +9,7 @@ app_port: 8080
 
 # Enterprise Search Server (Rotating Proxy)
 
-A highly-resilient, world-class FastAPI server that acts as a unified search endpoint for the NNI Truth Graph pipeline. Instead of relying on a single SearXNG instance (which can get IP blocked by upstream engines), this server dynamically fetches active public SearXNG instances globally, scores them, and executes concurrent multi-node queries.
+A highly-resilient, world-class FastAPI server that acts as a unified search endpoint for the Truth pipeline. Instead of relying on a single SearXNG instance (which can get IP blocked by upstream engines), this server dynamically fetches active public SearXNG instances globally, scores them, and executes concurrent multi-node queries.
 
 ## Features
 
